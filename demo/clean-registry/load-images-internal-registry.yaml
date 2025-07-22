@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Script to transfer multiple images from Docker Hub to two repositories of a private registry using Skopeo
+
+# Configuration
+REGISTRY="192.168.49.2:30500"
+REPO_NAME1="tfg-front-test/clean"
+REPO_NAME2="tfg-backend-test/clean"
+TAGS=("0.0.0" "0.0.1" "0.0.2" "0.0.3" "0.0.4")
+SOURCE_IMAGES=(
+  "docker.io/library/busybox"
+  "docker.io/library/alpine"
+  "docker.io/library/debian"
+  "docker.io/library/ubuntu"
+  "docker.io/library/httpd"
+)
+
+# Options for Skopeo
+SKOPEO_OPTS="--insecure-policy --dest-tls-verify=false"
+
+echo "Starting image transfer with Skopeo."
+
+for i in "${!SOURCE_IMAGES[@]}"; do
+  SRC_IMAGE="${SOURCE_IMAGES[$i]}"
+  TAG="${TAGS[$i]}"
+  DEST_IMAGE1="docker://${REGISTRY}/${REPO_NAME1}:${TAG}"
+  DEST_IMAGE2="docker://${REGISTRY}/${REPO_NAME2}:${TAG}"
+
+  echo "Copying image $SRC_IMAGE as ${REPO_NAME1}:${TAG}..."
+  skopeo copy $SKOPEO_OPTS \
+    "docker://${SRC_IMAGE}:latest" \
+    "$DEST_IMAGE1"
+
+  if [ $? -eq 0 ]; then
+    echo "Image ${TAG} copied successfully to ${REPO_NAME1}."
+  else
+    echo "Error copying image with tag ${TAG} to ${REPO_NAME1}. Aborting."
+    exit 1
+  fi
+
+  echo
+  echo "Copying image $SRC_IMAGE as ${REPO_NAME2}:${TAG}..."
+  skopeo copy $SKOPEO_OPTS \
+    "docker://${SRC_IMAGE}:latest" \
+    "$DEST_IMAGE2"
+
+  if [ $? -eq 0 ]; then
+    echo "Image ${TAG} copied successfully to ${REPO_NAME2}."
+  else
+    echo "Error copying image with tag ${TAG} to ${REPO_NAME2}. Aborting."
+    exit 1
+  fi
+
+  echo
+  echo "---------------------------------------------"
+  echo
+done
+
+echo "Process completed! All images have been successfully transferred to both repositories."

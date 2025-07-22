@@ -1,0 +1,34 @@
+docker run -d --privileged --network=host --name diun_tfg \
+  -e "TZ=Europe/Madrid" \
+  -e "LOG_LEVEL=debug" \
+  -e "LOG_JSON=false" \
+  -e "DIUN_WATCH_WORKERS=100" \
+  -e "DIUN_WATCH_SCHEDULE=*/1 * * * *" \
+  -e "DIUN_WATCH_JITTER=0s" \
+  -e "DIUN_WATCH_FIRSTCHECKNOTIF=false" \
+  -e "DIUN_WATCH_COMPAREDIGEST=false" \
+  -e "DIUN_PROVIDERS_DOCKER=false" \
+  -e "DIUN_NOTIF_SCRIPT_CMD=/data/diun.sh" \
+  -e "DIUN_NOTIF_SCRIPT_ARGS=$DIUN_ENTRY_IMAGE, $DIUN_ENTRY_CREATED, $DIUN_ENTRY_STATUS, $DIUN_ENTRY_DIGEST, $DIUN_ENTRY_METADATA_CTN_CREATEDAT, $DIUN_ENTRY_METADATA_CTN_SIZE, $DIUN_ENTRY_METADATA_CTN_STATE" \
+  -e "DIUN_NOTIF_SCRIPT_DIR=/data" \
+  -e "DIUN_REGOPTS_<KEY>_NAME=tfg-dev.core.harbor.dev.lab" \
+  -e "DIUN_REGOPTS_<KEY>_SELECTOR=image" \
+  -e "DIUN_REGOPTS_<KEY>_USERNAME=admin" \
+  -e "DIUN_REGOPTS_<KEY>_PASSWORD=tfg" \
+  -e "DIUN_REGOPTS_<KEY>_TIMEOUT=60s" \
+  -e "DIUN_REGOPTS_<KEY>_INSECURETLS=true" \
+  -e "DIUN_PROVIDERS_FILE_FILENAME=/data/config.yml" \
+  -e "DIUN_PROVIDERS_FILE_DIRECTORY=/data" \
+  -e "DIUN_NOTIF_MAIL_INSECURESKIPVERIFY=true" \
+  -e "DIUN_NOTIF_MAIL_HOST=192.168.49.2" \
+  -e "DIUN_NOTIF_MAIL_PORT=30000" \
+  -e "DIUN_NOTIF_MAIL_LOCALNAME=192.168.49.2" \
+  -e "DIUN_NOTIF_MAIL_FROM=containerstfg2025@gmail.com" \
+  -e "DIUN_NOTIF_MAIL_TO=containerstfg2025@gmail.com" \
+  -v "/home/ayuso/tfg/diun/data:/data" \
+  -v "/home/ayuso/.docker/config.json:/root/.docker/config.json" \
+  -v "/run/docker.sock:/var/run/docker.sock" \
+  -v "/home/ayuso/.kube/config:/root/.kube/config" \
+  -v "/home/ayuso/.minikube:/home/ayuso/.minikube" \
+  -l "diun.enable=true" \
+  192.168.49.2:30500/diun/diun-tfg:0.2

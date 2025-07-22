@@ -1,0 +1,12 @@
+## Deploy minikube cluster based on docker
+
+./00-deploy-minikube-cluster.sh
+
+## Configure registry service as NodePort:
+
+./01-change-svc-registry-to-nodeport.sh
+
+
+## Test availibility and accessibility:
+
+curl -s http://192.168.49.2:30500/v2/_catalog

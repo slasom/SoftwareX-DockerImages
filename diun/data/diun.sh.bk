@@ -1,0 +1,124 @@
+#!/bin/sh
+# Diun script
+
+# Declaration of variables
+NOW=`date +%A_%d%m%y_%H%M`
+ruta_error=/data/logs
+ruta_ok=$ruta_error
+entry_image=$DIUN_ENTRY_IMAGE
+internal_registry_kubernetes="192.168.49.2:30500"
+image_registry_kube=${entry_image:28}
+deploy_name=${image_registry_kube#*/} # Remove project
+deploy_name=${deploy_name%%:*} # Remove version
+container_name=$deploy_name
+project="tfg-app-dev"
+
+
+# Function to send alert emails
+enviarmensaje () {
+
+subject="¡$1!"
+body=$(cat $ruta_error/errores_backup.txt)
+from="containerstfg2025@gmail.com"
+to="containerstfg2025@gmail.com"
+#echo -e "Subject:${subject}\nBody:${body}" | sendmail -f "${from}" -S "192.168.49.2:30000" -t "${to}"
+echo -e "Subject: ${subject}\n\n${body}" | sendmail -f "${from}" -S "192.168.49.2:30000" -t "${to}"
+rm -f $ruta_error/errores_backup.txt
+}
+
+enviarmensaje_ok () {
+
+subject="¡$1!"
+body=$(cat $ruta_ok/mensaje_ok.txt)
+from="containerstfg2025@gmail.com"
+to="containerstfg2025@gmail.com"
+#echo -e "Subject:${subject}\nBody:${body}" | sendmail -f "${from}" -S "192.168.49.2:30000" -t "${to}"
+echo -e "Subject: ${subject}\n\n${body}" | sendmail -f "${from}" -S "192.168.49.2:30000" -t "${to}"
+rm -f $ruta_ok/mensaje_ok.txt
+}
+
+### Empty logs
+rm -f /data/logs/*
+
+
+echo "----------" >> test.txt
+
+echo "NEW IMAGE VERSION AVAILABLE:"  >> test.txt
+echo "DATE: $NOW" >> test.txt
+echo "DIUN_VERSION: $DIUN_VERSION"  >> test.txt
+echo "STATUS: $DIUN_ENTRY_STATUS"  >> test.txt
+echo "IMAGE: $DIUN_ENTRY_IMAGE"  >> test.txt
+echo "SHA: $DIUN_ENTRY_DIGEST"  >> test.txt
+echo "DATE: $DIUN_ENTRY_CREATED"  >> test.txt
+echo "PLATFORM: $DIUN_ENTRY_PLATFORM"  >> test.txt
+echo "New clean image: $image_registry_kube" >> test.txt
+
+### CI - Transfer image to internal repository 
+
+echo -e "\nCommand to execute:" >> test.txt
+skopeo copy --src-tls-verify=false --dest-tls-verify=false docker://$entry_image docker://$internal_registry_kubernetes/$image_registry_kube >/dev/null 2>>$ruta_error/logs_error.txt
+
+if [ ! $? -eq 0 ];
+  then
+   echo "ATENTION: An error occurred while transferring via skopeo from $entry_image to $internal_registry_kubernetes/$image_registry_kube"
+   echo "ATENTION: An error occurred while transferring via skopeo from $entry_image to $internal_registry_kubernetes/$image_registry_kube "  >> test.txt
+   echo "ATENTION: An error has occurred while transferring via skopeo from $entry_image to $internal_registry_kubernetes/$image_registry_kube"  >> $ruta_error/errores_backup.txt
+   echo -e "\nError: " >> test.txt
+   cat $ruta_error/errores_backup.txt >> test.txt
+   enviarmensaje "Docker Diun: Error while transferring the image $image_registry_kube via skopeo"
+   exit
+  else
+   echo "Process completed: the image '$image_registry_kube' has been successfully published to the internal Kubernetes registry ('$internal_registry_kubernetes')."
+   echo "Process completed: the image '$image_registry_kube' has been successfully published to the internal Kubernetes registry ('$internal_registry_kubernetes')." >> test.txt
+   echo "Process completed: the image '$image_registry_kube' has been successfully published to the internal Kubernetes registry ('$internal_registry_kubernetes')." >> $ruta_error/mensaje_ok.txt
+
+   cat $ruta_error/mensaje_ok.txt >> test.txt
+   enviarmensaje_ok "Docker Diun: New image published to internal Kubernetes registry: $image_registry_kube"
+fi
+
+### CD-Kubernetes Development Environment 
+
+sleep 10
+
+echo -e "\nCD-Kubernetes Development Environment: "
+
+
+# Verify if the Deployment exists in the specified namespace
+if kubectl get deployment "$deploy_name" -n "$project" &> /dev/null; then
+    echo "The Deployment '$deploy_name' already exists in the namespace '$project'. Updating the image..."
+    # Update the container image in the existing Deployment
+    kubectl patch deployment "$deploy_name" -n "$project" --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/imagePullPolicy", "value":"Always"}]' >/dev/null 2>>$ruta_error/errores_backup.txt
+    kubectl set image deployment/"$deploy_name" "$container_name"="$internal_registry_kubernetes/$image_registry_kube" -n "$project" >/dev/null 2>>$ruta_error/errores_backup.txt
+    status=$?
+else
+    echo "The Deployment '$deploy_name' does not exist in the namespace '$project'. Creating it..."
+    # Create a new Deployment with the specified image
+    kubectl create ns "$project" >/dev/null 2>&1  # If the ns does not exist, create it, if it exists do nothing.
+    kubectl create deployment "$deploy_name" --image="$internal_registry_kubernetes/$image_registry_kube" -n "$project" >/dev/null 2>>$ruta_error/errores_backup.txt
+    kubectl patch deployment "$deploy_name" --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/imagePullPolicy", "value":"Always"}]' >/dev/null 2>>$ruta_error/errores_backup.txt
+
+    kubectl expose deployment "$deploy_name" --port=80 --target-port=80 --name=$deploy_name-service -n "$project" >/dev/null 2>>$ruta_error/errores_backup.txt
+    echo "kubectl expose deployment "$deploy_name" --port=80 --target-port=80 --name=$deploy_name-service" >> test.txt 
+    kubectl patch service $deploy_name-service -p '{"spec": {"type": "NodePort"}}' -n "$project"  >/dev/null 2>>$ruta_error/errores_backup.txt
+    cat $ruta_error/errores_backup.txt >> test.txt
+    status=$?
+fi
+
+#kubectl set image deployment/$deploy_name $container_name=$internal_registry_kubernetes/$image_registry_kube -n $project >/dev/null 2>>$ruta_error/errores_backup.txt
+
+if [ ! $status -eq 0 ]; then
+  # Messages in case of error
+  #echo "Error details:" >> $ruta_error/errores_backup.txt
+  #echo "ATENTION: An error occurred while deploying the image '$image_registry_kube' in the deployment '$deploy_name' of the project '$project'." >/dev/null 2>>$ruta_error/errores_backup.txt
+  cat "$ruta_error"/errores_backup.txt >> test.txt
+  enviarmensaje "Error deploying the image '$image_registry_kube' in the deployment '$deploy_name' of the project '$project'."
+  exit 1
+else
+  # Messages in case of success
+  echo "Deployment details:" >> $ruta_error/mensaje_ok.txt
+  echo "Process completed: The image '$image_registry_kube' has been successfully deployed in the deployment '$deploy_name' of the project '$project'." >> $ruta_error/mensaje_ok.txt
+  cat "$ruta_error"/logs_success.txt >> test.txt
+  NODE_PORT=$(kubectl get svc $deploy_name-service -o jsonpath='{.spec.ports[0].nodePort}' -n $project)
+  echo "To access the app you can use the following url: http://192.168.49.2:$NODE_PORT" >> $ruta_error/mensaje_ok.txt
+  enviarmensaje_ok "Successful deployment of the image '$image_registry_kube' in the deployment '$deploy_name' of the project '$project'"
+fi

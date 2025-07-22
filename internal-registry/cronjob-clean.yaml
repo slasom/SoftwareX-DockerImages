@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: clean-registry
+  namespace: kube-system
+spec:
+  schedule: "0 2 * * *"  # Everyday at 2:00 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: clean-job
+            image: 192.168.49.2:30500/tfg/clean-registry:0.0.0
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: REGISTRY_URL
+              value: "http://192.168.49.2:30500"
+            - name: TAGS_TO_KEEP
+              value: "3"
+            - name: DRY_RUN
+              value: "false"
+          restartPolicy: OnFailure
+

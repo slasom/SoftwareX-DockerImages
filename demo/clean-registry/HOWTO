@@ -1,0 +1,11 @@
+## Cleaning the Internal Minikube Registry
+
+### Run the following script to load images into the internal registry:
+
+./load-images-internal-registry.yaml
+
+### Then, execute the script that retains only the last 3 most recent versions of each image, deleting the older ones:
+
+./clean-registry.sh
+
+This process applies to all repositories within the registry. If desired, filtering by a specific repository can be implemented directly in the script.

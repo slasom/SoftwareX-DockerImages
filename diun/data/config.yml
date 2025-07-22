@@ -1,0 +1,22 @@
+### /path/to/config.yml
+
+### Default values:
+# https://crazymax.dev/diun/providers/file/
+
+- name: tfg-dev.core.harbor.dev.lab/tfg-app/nginx
+  watch_repo: true
+  max_tags: 1
+  sort_tags: semver
+  include_tags:
+    - ^\d+\.\d+\..*
+  exclude_tags:
+    - ^latest$
+
+- name: tfg-dev.core.harbor.dev.lab/tfg/clean-registry
+  watch_repo: true
+  max_tags: 1
+  sort_tags: semver
+  include_tags:
+    - ^\d+\.\d+\..*
+  exclude_tags:
+    - ^latest$

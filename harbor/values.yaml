@@ -1,0 +1,31 @@
+# Global variables
+externalURL: http://tfg-dev.core.harbor.dev.lab
+harborAdminPassword: "tfg"
+
+expose:
+  type: ingress
+  tls:
+    enabled: false
+  ingress:
+    hosts:
+      core: tfg-dev.core.harbor.dev.lab
+    className: "nginx" 
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    registry:
+      storageClass: standard
+      size: 10Gi
+    database:
+      storageClass: standard
+      size: 1Gi
+    trivy:
+      storageClass: standard
+      size: 5Gi
+
+database:
+  type: internal
+

@@ -1,0 +1,13 @@
+helm repo add harbor https://helm.goharbor.io
+helm repo update
+
+helm install harbor harbor/harbor -n harbor --create-namespace -f values.yaml
+
+# Retrieve the Harbor ingress secret and save it to a file
+kubectl get secret harbor-ingress -n harbor -o json | jq -r '.data."ca.crt"' | base64 -d > harbor-ca.crt
+
+sudo mv harbor-ca.crt /usr/local/share/ca-certificates/harbor-ca.crt
+
+kubectl get secret harbor-ingress -n harbor -o json | jq -r '.data."tls.crt"' | base64 -d >> /etc/ssl/certs/ca-certificates.crt
+
+

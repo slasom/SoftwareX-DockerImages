@@ -1,0 +1,21 @@
+## Enable Internal Registry in Minikube
+
+minikube addons enable registry
+
+## Build the Image for the CronJob that Executes the Cleanup Script According to the Defined Configuration
+
+docker build -t 192.168.49.2:30500/tfg/clean-registry:0.0.0 .
+
+## Create the CronJob in the kube-system Namespace
+
+kubectl create -f cronjob-clean.yaml
+
+## Demo to Verify Proper Functioning
+
+./load-images-internal-registry.yaml
+
+## Once the images have been uploaded to Minikube's internal registry, proceed to create the job to execute the cleanup process:
+
+kubectl create job test --from=cronjob/clean-registry
+
+kubectl get pods | grep test

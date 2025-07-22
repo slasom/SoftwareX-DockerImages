@@ -1,0 +1,24 @@
+## Demo: testing the CI/CD workflow
+
+### Step 1: Generate the nginx imagenes for the demo
+
+docker build -t tfg-dev.core.harbor.dev.lab/tfg-app/nginx:0.0.0 .
+
+### Step 2: Edit the Dockerfile for each new version
+Replace the COPY intruction with the appropiate file:
+
+Version 0.0.1 → index-v1.html
+
+Version 0.0.2 → index-v2.html
+
+Version 0.0.3 → index-v3.html
+
+Version 0.0.4 → index-v4.html
+
+For example, for version 0.0.1:
+
+COPY index-v1.html /usr/share/nginx/html/index.html
+
+### Step 3: Push the images to the Harbor registry
+
+./demo-nginx.sh

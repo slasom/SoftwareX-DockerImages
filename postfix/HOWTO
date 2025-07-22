@@ -1,0 +1,22 @@
+## Deploy server SMTP postfix
+https://github.com/bokysan/docker-postfix
+
+helm repo add bokysan https://bokysan.github.io/docker-postfix/
+helm upgrade --install --namespace postfix --create-namespace --set persistence.enabled=false mail bokysan/mail -f values.yaml
+
+It is important to check if the configurttion in the file values.yaml is correct.
+
+## Test the Postfix SMTP server:
+
+telnet 192.168.49.2 30000
+
+## Once inside,launch the following:
+
+HELO localhost
+MAIL FROM: <containerstfg2025@gmail.com>
+RCPT TO: <containerstfg2025@gmail.com>  # Change for the desired email address
+DATA
+Subject: APP IN PROGRESS
+This is a test email sent from my Postfix server.
+.
+QUIT

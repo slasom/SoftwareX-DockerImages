@@ -1,0 +1,19 @@
+## Documentation:
+https://crazymax.dev/diun/
+
+## Dockerfile with which the image running diun has been deployed:
+Dockerfile
+
+## To build the image from the Dockerfile:
+docker build -t nombre_imagen:version . (path where the Dockerfile is located)
+Docker, curl, and skopeo have been installed; if any more are needed, they can be added to the Dockerfile.
+
+## Run the following script to deploy the diun docker container:
+./01-Run-Diun-Email.sh
+In our case, it has been deployed by passing the configuration through environment variables
+
+## File provider where the images from the external repository that we want to observe are passed:
+data/config.yml
+
+## Script to execute each time we receive a notification for a new/update of an observed image:
+data/diun.sh

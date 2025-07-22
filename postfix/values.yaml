@@ -1,0 +1,82 @@
+replicaCount: 1
+
+image:
+  repository: boky/postfix
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Configuramos el servicio para el servidor SMTP
+service:
+  enabled: true
+  type: NodePort  # Usamos NodePort para exponer el puerto desde fuera del clúster
+  port: 587
+  targetPort: 587
+  nodePort: 30000  # Puerto accesible fuera del clúster
+
+#service:
+# type: ClusterIP
+#  port: 587
+#  labels: {}
+#  annotations: {}
+
+resources: {}
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  labels: {}
+  annotations: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+extraVolumes: []
+extraVolumeMounts: []
+extraInitContainers: []
+extraEnv: []
+
+deployment:
+  labels: {}
+  annotations: {}
+
+pod:
+  securityContext: {}
+  labels: {}
+  annotations: {}
+
+container:
+  postfix:
+    securityContext: {}
+
+config:
+  general:
+    TZ: Europe/Madrid
+    RELAYHOST: "smtp.gmail.com"
+    RELAYPORT: "587"
+    RELAYHOST_USERNAME: "containerstfg2025@gmail.com"
+    RELAYHOST_PASSWORD: "lywn avmm ugik jylo"
+    ALLOWED_SENDER_DOMAINS: "gmail.com"
+  postfix: {}
+  opendkim: {}
+
+persistence:
+  enabled: true
+  volumeClaimTemplate:
+    enabled: true
+    namespace: postfix
+  accessModes:
+    - ReadWriteOnce
+  existingClaim: ""
+  size: 1Gi
+  storageClass: "standard"
+

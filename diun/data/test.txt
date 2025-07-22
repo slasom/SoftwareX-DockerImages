@@ -1,0 +1,8 @@
+Process completed: the image 'tfg-app/nginx:0.0.2' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.4' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.1' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.2' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.4' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.1' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.2' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
+Process completed: the image 'tfg-app/nginx:0.0.4' has been successfully pushed to the internal Kubernetes registry ('192.168.49.2:30500').
