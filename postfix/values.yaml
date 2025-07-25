@@ -13,13 +13,13 @@ serviceAccount:
   annotations: {}
   name: ""
 
-# Configuramos el servicio para el servidor SMTP
+# Configure the service for the SMTP server
 service:
   enabled: true
-  type: NodePort  # Usamos NodePort para exponer el puerto desde fuera del clúster
+  type: NodePort  # We use NodePort to expose the port from outside the cluster
   port: 587
   targetPort: 587
-  nodePort: 30000  # Puerto accesible fuera del clúster
+  nodePort: 30000  # Port accessible from outside the cluster
 
 #service:
 # type: ClusterIP
